@@ -18,11 +18,7 @@ type ElectricUsage struct {
 	CostInCents int64
 }
 
-type ElectricRecords struct {
-	ElectricUsage []*ElectricUsage
-}
-
-func ParseCsv(file string) (*ElectricRecords, error) {
+func ParseCsv(file string) ([]*ElectricUsage, error) {
 	dateRegex, err := regexp.Compile(`(\d{4}-\d\d-\d\d \d\d:\d\d) to (\d{4}-\d\d-\d\d \d\d:\d\d)`)
 	if err != nil {
 		log.Fatal(err)
@@ -49,7 +45,7 @@ func ParseCsv(file string) (*ElectricRecords, error) {
 			records = append(records, usage)
 		}
 	}
-	return &ElectricRecords{records}, nil
+	return records, nil
 }
 
 func parseRecord(row []string, dates []string) *ElectricUsage {
