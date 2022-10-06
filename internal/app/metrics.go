@@ -13,24 +13,20 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 )
 
-//type Metric struct {
-//	Name string `json:"__name__"`
-//	Db   string
-//}
-
 type MetricLine struct {
-	//Metric     Metric
-	//Values     []float64
 	Timestamps []int64
 }
 
-func WriteMetrics(records []*ElectricUsage, config InfluxDB) {
+func WriteMetrics(records []*ElectricUsage, config InfluxDB, existingPoints map[int64]struct{}) {
 	client := influxdb2.NewClient(config.Host, config.User+":"+config.Password)
 	writeApi := client.WriteAPIBlocking("", config.Database)
 	points := make([]*write.Point, 0, 15*2*len(records))
 	for _, record := range records {
 		divisor := record.EndTime.Sub(record.StartTime).Minutes()
 		for t := record.StartTime; record.EndTime.After(t); t = t.Add(time.Minute) {
+			if _, ok := existingPoints[t.Unix()]; ok {
+				continue
+			}
 			watts := influxdb2.NewPointWithMeasurement("electric").
 				SetTime(t).
 				AddField("usage", float64(record.WattHours)/divisor)
@@ -45,18 +41,9 @@ func WriteMetrics(records []*ElectricUsage, config InfluxDB) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	// query VM for metrics that already exist in the range we're trying to insert?
-	// if that's too much work, then just maintain last-inserted-time and don't insert newer
-	log.Println(points)
 }
 
-// the goal here is to not double write any metrics
-// therefore, we should simply filter inserted points by any points that
-// already exist.
-// the algorithm for that is to run this query first, making a map[time]struct{}
-// and discarding any point in WriteMetrics that exists in the map.
-
-func QueryPreviousMetrics(startTime time.Time, endTime time.Time, config InfluxDB) map[int64]struct{} {
+func QueryPreviousMetrics(startTime time.Time, endTime time.Time, config InfluxDB) (map[int64]struct{}, error) {
 	client := &http.Client{}
 	v := url.Values{
 		"match[]": {"sensor_temperature"},
@@ -65,13 +52,13 @@ func QueryPreviousMetrics(startTime time.Time, endTime time.Time, config InfluxD
 	}
 	req, err := http.NewRequest("POST", config.Host+"/api/v1/export", strings.NewReader(v.Encode()))
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	req.Header.Add("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth(config.User, config.Password)
 	resp, err := client.Do(req)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
 	defer func() {
 		err := resp.Body.Close()
@@ -90,5 +77,5 @@ func QueryPreviousMetrics(startTime time.Time, endTime time.Time, config InfluxD
 			existing[ts] = struct{}{}
 		}
 	}
-	return existing
+	return existing, nil
 }
