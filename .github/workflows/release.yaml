@@ -1,0 +1,42 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+
+      - name: Set up Go 1.x
+        uses: actions/setup-go@v3
+        with:
+          go-version: ^1.19
+        id: go
+
+      - name: Check out code into the Go module directory
+        uses: actions/checkout@v3
+
+      - name: Get dependencies
+        run: go get -v -t -d ./...
+
+      - name: Test
+        run: go test -v .
+
+      - name: Build linux-arm
+        run: env GOOS=linux GOARCH=arm go build -v .
+      - name: rename linux arm
+        run: mv electric-usage-downloader electric-usage-downloader-linux-arm
+
+      - name: Create release
+        id: create_release
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: electric-usage-downloader-linux-arm
+          token: ${{ secrets.GITHUB_TOKEN }}
