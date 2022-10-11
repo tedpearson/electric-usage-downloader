@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -68,7 +69,7 @@ func QueryPreviousMetrics(startTime time.Time, endTime time.Time, config InfluxD
 	for decoder.More() {
 		var line MetricLine
 		if err := decoder.Decode(&line); err != nil {
-			log.Printf("Bad line: %w\n", err)
+			log.Println(fmt.Errorf("Bad line: %w\n", err))
 		}
 		for _, ts := range line.Timestamps {
 			existing[ts] = struct{}{}
