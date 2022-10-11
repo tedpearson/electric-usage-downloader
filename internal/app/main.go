@@ -78,7 +78,8 @@ func Main() {
 		// subtract N days and 1 minute to get the start date
 		startDate = endDate.Add(time.Duration(-config.ExtractDays) * 48 * time.Hour).Add(time.Minute)
 	}
-
+	log.Printf("Start date: %s\n", startDate)
+	log.Printf("End date: %s\n", endDate)
 	log.Println("Downloading CSV...")
 	path, err := DownloadCsv(config, startDate.Format("01/02/2006"), endDate.Format("01/02/2006"))
 	if err != nil {
