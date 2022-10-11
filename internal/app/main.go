@@ -2,7 +2,6 @@ package app
 
 import (
 	"flag"
-	"fmt"
 	"log"
 	"os"
 	"time"
@@ -78,22 +77,26 @@ func Main() {
 		startDate = endDate.Add(time.Duration(-config.ExtractDays) * 48 * time.Hour).Add(time.Minute)
 	}
 
+	log.Println("Downloading CSV...")
 	path, err := DownloadCsv(config, startDate.Format("01/02/2006"), endDate.Format("01/02/2006"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("file downloaded: %s", path)
+	log.Printf("CSV downloaded: %s\n", path)
 
 	records, err := ParseCsv(path)
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("Querying previous metrics...")
 	existingPoints, err := QueryPreviousMetrics(startDate, endDate, config.InfluxDB)
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("Inserting data...")
 	err = WriteMetrics(records, config.InfluxDB, existingPoints)
 	if err != nil {
 		log.Fatal(err)
 	}
+	log.Println("Done")
 }
