@@ -55,8 +55,8 @@ func parseRecord(row []string, dates []string) *ElectricUsage {
 	}
 	startTime, err1 := time.ParseInLocation("2006-01-02 15:04", dates[0], time.Local)
 	endTime, err2 := time.ParseInLocation("2006-01-02 15:04", dates[1], time.Local)
-	kilowattHours, err3 := decimal.NewFromString(row[1])
-	cents, err4 := decimal.NewFromString(row[2])
+	kilowattHours, err3 := parseDecimal(row[1])
+	cents, err4 := parseDecimal(row[2])
 	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
 		log.Printf("Bad record: %s\n", row)
 		return nil
@@ -67,4 +67,11 @@ func parseRecord(row []string, dates []string) *ElectricUsage {
 		WattHours:   kilowattHours.Mul(decimal.NewFromInt(1000)).IntPart(),
 		CostInCents: cents.Mul(decimal.NewFromInt(100)).IntPart(),
 	}
+}
+
+func parseDecimal(s string) (decimal.Decimal, error) {
+	if s == "" {
+		return decimal.NewFromInt(0), nil
+	}
+	return decimal.NewFromString(s)
 }
