@@ -11,10 +11,7 @@ import (
 )
 
 func DownloadCsv(config *Config, startDate string, endDate string) (string, error) {
-	allocatorFlags := append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", false))
-	ctx, cancel := chromedp.NewExecAllocator(context.Background(), allocatorFlags...)
-	defer cancel()
-	ctx, cancel = chromedp.NewContext(ctx, chromedp.WithLogf(log.Printf))
+	ctx, cancel := chromedp.NewContext(context.Background(), chromedp.WithLogf(log.Printf))
 	defer cancel()
 	ctx, cancel = context.WithTimeout(ctx, 30*time.Second)
 	defer cancel()
