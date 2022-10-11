@@ -17,14 +17,14 @@ type MetricLine struct {
 	Timestamps []int64
 }
 
-func WriteMetrics(records []*ElectricUsage, config InfluxDB, existingPoints map[int64]struct{}) {
+func WriteMetrics(records []*ElectricUsage, config InfluxDB, existingPoints map[int64]struct{}) error {
 	client := influxdb2.NewClient(config.Host, config.User+":"+config.Password)
 	writeApi := client.WriteAPIBlocking("", config.Database)
 	points := make([]*write.Point, 0, 15*2*len(records))
 	for _, record := range records {
 		divisor := record.EndTime.Sub(record.StartTime).Minutes()
 		for t := record.StartTime; record.EndTime.After(t); t = t.Add(time.Minute) {
-			if _, ok := existingPoints[t.Unix()]; ok {
+			if _, ok := existingPoints[t.UnixMilli()]; ok {
 				continue
 			}
 			watts := influxdb2.NewPointWithMeasurement("electric").
@@ -37,18 +37,15 @@ func WriteMetrics(records []*ElectricUsage, config InfluxDB, existingPoints map[
 		}
 	}
 
-	err := writeApi.WritePoint(context.Background(), points...)
-	if err != nil {
-		log.Fatal(err)
-	}
+	return writeApi.WritePoint(context.Background(), points...)
 }
 
 func QueryPreviousMetrics(startTime time.Time, endTime time.Time, config InfluxDB) (map[int64]struct{}, error) {
 	client := &http.Client{}
 	v := url.Values{
-		"match[]": {"sensor_temperature"},
-		"start":   {startTime.Format("2006-01-02T15:04:05+07:00")},
-		"end":     {endTime.Format("2006-01-02T15:04:05+07:00")},
+		"match[]": {"electric_usage"},
+		"start":   {startTime.Format(`2006-01-02T15:04:05Z07:00`)},
+		"end":     {endTime.Format("2006-01-02T15:04:05Z07:00")},
 	}
 	req, err := http.NewRequest("POST", config.Host+"/api/v1/export", strings.NewReader(v.Encode()))
 	if err != nil {

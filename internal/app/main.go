@@ -43,6 +43,9 @@ func Main() {
 	if err != nil {
 		log.Fatal(err)
 	}
+	if config.ExtractDays > 45 || config.ExtractDays < 2 {
+		log.Fatal("ExtractDays must be between 2 and 45 per smarthub")
+	}
 
 	// parse time flags
 	startFlag := flag.String("start", "", "Start date of period to extract from electric co.")
@@ -50,37 +53,47 @@ func Main() {
 	flag.Parse()
 	var startDate, endDate time.Time
 	if *startFlag != "" {
-		startDate, err = time.Parse("2006-01-02", *startFlag)
+		startDate, err = time.ParseInLocation("2006-01-02", *startFlag, time.Local)
 		if err != nil {
 			log.Fatal(err)
 		}
 		if *endFlag == "" {
 			log.Fatal("start and end parameters must both be provided")
 		}
-		endDate, err = time.Parse("2006-01-02", *endFlag)
+		endDate, err = time.ParseInLocation("2006-01-02", *endFlag, time.Local)
 		if err != nil {
 			log.Fatal(err)
 		}
+		if endDate.Sub(startDate).Hours() > 24*45 {
+			log.Fatal("start and end parameters must define a period of no more than 45 days")
+		}
+		// endDate should be the last minute of the day for the VictoriaMetrics query.
+		endDate = endDate.Add((24 * time.Hour) - time.Minute)
 	} else {
-		endDate = time.Now().Truncate(24 * time.Hour)
-		startDate = endDate.Add(time.Duration(-config.ExtractDays) * 24 * time.Hour)
+		// yesterday
+		year, month, day := time.Now().Date()
+		// endDate should be the last minute of the day for the VictoriaMetrics query.
+		endDate = time.Date(year, month, day, 23, 59, 0, 0, time.Local)
+		// subtract N days and 1 minute to get the start date
+		startDate = endDate.Add(time.Duration(-config.ExtractDays) * 48 * time.Hour).Add(time.Minute)
 	}
 
-	path, err := DownloadCsv(config, startDate.Format("01/02/2006"), endDate.Format("01/02/2002"))
+	path, err := DownloadCsv(config, startDate.Format("01/02/2006"), endDate.Format("01/02/2006"))
 	if err != nil {
 		log.Fatal(err)
 	}
 	fmt.Printf("file downloaded: %s", path)
 
-	// parse csv
 	records, err := ParseCsv(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Printf("%+v", records)
 	existingPoints, err := QueryPreviousMetrics(startDate, endDate, config.InfluxDB)
 	if err != nil {
 		log.Fatal(err)
 	}
-	WriteMetrics(records, config.InfluxDB, existingPoints)
+	err = WriteMetrics(records, config.InfluxDB, existingPoints)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
