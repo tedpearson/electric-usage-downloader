@@ -24,13 +24,14 @@ func WriteMetrics(records []*ElectricUsage, config InfluxDB, existingPoints map[
 	points := make([]*write.Point, 0, 15*2*len(records))
 	for _, record := range records {
 		divisor := record.EndTime.Sub(record.StartTime).Minutes()
+		multiplier := 60 / divisor
 		for t := record.StartTime; record.EndTime.After(t); t = t.Add(time.Minute) {
 			if _, ok := existingPoints[t.UnixMilli()]; ok {
 				continue
 			}
 			watts := influxdb2.NewPointWithMeasurement("electric").
 				SetTime(t).
-				AddField("usage", float64(record.WattHours)/divisor)
+				AddField("watts", float64(record.WattHours)*multiplier)
 			cost := influxdb2.NewPointWithMeasurement("electric").
 				SetTime(t).
 				AddField("cost", float64(record.CostInCents)/divisor)
