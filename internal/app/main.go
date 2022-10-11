@@ -32,9 +32,13 @@ type Config struct {
 }
 
 func Main() {
+	configFlag := flag.String("config", "config.yaml", "Config file")
+	startFlag := flag.String("start", "", "Start date of period to extract from electric co.")
+	endFlag := flag.String("end", "", "End date of period to extract from electric co.")
+	flag.Parse()
 
 	// read config
-	file, err := os.ReadFile("config.yaml")
+	file, err := os.ReadFile(*configFlag)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -47,10 +51,6 @@ func Main() {
 		log.Fatal("ExtractDays must be between 2 and 45 per smarthub")
 	}
 
-	// parse time flags
-	startFlag := flag.String("start", "", "Start date of period to extract from electric co.")
-	endFlag := flag.String("end", "", "End date of period to extract from electric co.")
-	flag.Parse()
 	var startDate, endDate time.Time
 	if *startFlag != "" {
 		startDate, err = time.ParseInLocation("2006-01-02", *startFlag, time.Local)
