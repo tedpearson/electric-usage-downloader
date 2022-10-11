@@ -27,6 +27,7 @@ type Config struct {
 	LoginUrl    string
 	DownloadDir string
 	ExtractDays int
+	Timeout     string
 	InfluxDB    InfluxDB
 }
 

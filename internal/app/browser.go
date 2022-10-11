@@ -11,9 +11,13 @@ import (
 )
 
 func DownloadCsv(config *Config, startDate string, endDate string) (string, error) {
+	timeout, err := time.ParseDuration(config.Timeout)
+	if err != nil {
+		return "", err
+	}
 	ctx, cancel := chromedp.NewContext(context.Background(), chromedp.WithLogf(log.Printf))
 	defer cancel()
-	ctx, cancel = context.WithTimeout(ctx, 30*time.Second)
+	ctx, cancel = context.WithTimeout(ctx, timeout)
 	defer cancel()
 
 	done := make(chan string, 1)
@@ -29,7 +33,7 @@ func DownloadCsv(config *Config, startDate string, endDate string) (string, erro
 		}
 	})
 
-	err := chromedp.Run(ctx,
+	err = chromedp.Run(ctx,
 		chromedp.Navigate(config.LoginUrl),
 		chromedp.SetValue("#LoginUsernameTextBox", config.Username, chromedp.NodeVisible),
 		chromedp.SetValue("#LoginPasswordTextBox", config.Password),
