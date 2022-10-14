@@ -1,23 +1,32 @@
 name: release
 
 on:
-  push:
-    tags:
-      - 'v*'
+  workflow_dispatch:
+    inputs:
+      release_version:
+        description: Version to release (vX.X.X)
+        required: true
+        type: string
 
 jobs:
-
   build:
     name: Build
+    strategy:
+      matrix:
+        GOOS: [ linux, darwin ]
+        GOARCH: [ arm, arm64, amd64 ]
+        exclude:
+          - GOOS: darwin
+            GOARCH: arm
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    env:
+      executable: electric-usage-downloader-${{ matrix.GOOS }}-${{ matrix.GOARCH }}
     steps:
 
       - name: Set up Go 1.x
         uses: actions/setup-go@v3
         with:
-          go-version: ^1.19
+          go-version: ^1.15
         id: go
 
       - name: Check out code into the Go module directory
@@ -29,14 +38,15 @@ jobs:
       - name: Test
         run: go test -v .
 
-      - name: Build linux-arm
-        run: env GOOS=linux GOARCH=arm go build -v .
-      - name: rename linux arm
-        run: mv electric-usage-downloader electric-usage-downloader-linux-arm
+      - name: Build
+        run: env GOOS=${{matrix.GOOS}} GOARCH=${{matrix.GOARCH}} go build -v -o ${{env.executable}} .
 
-      - name: Create release
+      - name: Create or update release
         id: create_release
         uses: ncipollo/release-action@v1
         with:
-          artifacts: electric-usage-downloader-linux-arm
+          allowUpdates: true
+          artifacts: ${{env.executable}}
+          tag: ${{inputs.release_version}}
+          commit: master
           token: ${{ secrets.GITHUB_TOKEN }}
