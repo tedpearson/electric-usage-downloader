@@ -32,6 +32,7 @@ func DownloadCsv(config *Config, startDate string, endDate string) (string, erro
 				if ev.State == browser.DownloadProgressStateCompleted {
 					done <- ev.GUID
 					close(done)
+					log.Println("Download completed")
 				}
 			}
 		}
@@ -58,6 +59,7 @@ func DownloadCsv(config *Config, startDate string, endDate string) (string, erro
 	if err != nil {
 		return "", err
 	}
+	log.Println("Waiting for Chrome...")
 	guid := <-done
 	return fmt.Sprintf("%s/%s", config.DownloadDir, guid), nil
 }
