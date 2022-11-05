@@ -21,7 +21,7 @@ type ElectricUsage struct {
 func ParseCsv(file string) ([]*ElectricUsage, error) {
 	dateRegex, err := regexp.Compile(`(\d{4}-\d\d-\d\d \d\d:\d\d) to (\d{4}-\d\d-\d\d \d\d:\d\d)`)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 	// drop all lines until it starts with dddd-dd-dd
 	data, err := os.Open(file)

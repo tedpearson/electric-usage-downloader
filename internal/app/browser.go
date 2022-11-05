@@ -46,7 +46,19 @@ func DownloadCsv(config *Config, startDate string, endDate string) (string, erro
 		browser.SetDownloadBehavior(browser.SetDownloadBehaviorBehaviorAllowAndName).
 			WithDownloadPath(config.DownloadDir).
 			WithEventsEnabled(true),
-		chromedp.Click("#MyUsageDropDown > a", chromedp.NodeVisible),
+	)
+	if err != nil {
+		return "", err
+	}
+	// possible modal dialog that needs to be dismissed
+	// if it doesn't show up, ignore error finding it
+	modalCtx, cancel := context.WithTimeout(ctx, 10*time.Second)
+	defer cancel()
+	_ = chromedp.Run(modalCtx,
+		chromedp.Click(`//div[contains(@class, "modal-body")]//button[.="No"]`, chromedp.NodeVisible),
+	)
+	err = chromedp.Run(ctx,
+		chromedp.Click("#ViewUsageLink", chromedp.NodeVisible),
 		chromedp.Click(`//div[.="Usage Explorer"]`, chromedp.NodeVisible),
 		chromedp.Click(`//img[@alt='Usage Management']`, chromedp.NodeVisible),
 		chromedp.Sleep(time.Second),
