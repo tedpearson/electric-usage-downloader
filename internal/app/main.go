@@ -72,7 +72,7 @@ func Main() error {
 		// endDate should be the last minute of the day for the VictoriaMetrics query.
 		endDate = time.Date(year, month, day, 23, 59, 0, 0, time.Local)
 		// subtract N days and 1 minute to get the start date
-		startDate = endDate.Add(time.Duration(-config.ExtractDays) * 48 * time.Hour).Add(time.Minute)
+		startDate = endDate.Add(time.Duration(-config.ExtractDays) * 24 * time.Hour).Add(time.Minute)
 	}
 	log.Printf("Start date: %s\n", startDate)
 	log.Printf("End date: %s\n", endDate)
