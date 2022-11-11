@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"time"
@@ -72,6 +73,10 @@ func DownloadCsv(config *Config, startDate string, endDate string) (string, erro
 		return "", err
 	}
 	log.Println("Waiting for Chrome...")
-	guid := <-done
-	return fmt.Sprintf("%s/%s", config.DownloadDir, guid), nil
+	select {
+	case <-time.After(timeout):
+		return "", errors.New("error: Timed out waiting for Chrome")
+	case guid := <-done:
+		return fmt.Sprintf("%s/%s", config.DownloadDir, guid), nil
+	}
 }
