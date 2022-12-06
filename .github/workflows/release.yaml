@@ -11,3 +11,4 @@ jobs:
     uses: tedpearson/ForecastMetrics/.github/workflows/release-template.yaml@master
     with:
       executable: electric-usage-downloader
+      ref: main
