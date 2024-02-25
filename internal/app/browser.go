@@ -41,9 +41,10 @@ func DownloadCsv(config *Config, startDate string, endDate string) (string, erro
 
 	err = chromedp.Run(ctx,
 		chromedp.Navigate(config.LoginUrl),
-		chromedp.SetValue("#LoginUsernameTextBox", config.Username, chromedp.NodeVisible),
-		chromedp.SetValue("#LoginPasswordTextBox", config.Password),
-		chromedp.Click("#LoginSubmitButton"),
+		chromedp.SetValue("(//input)[1]", config.Username, chromedp.NodeVisible),
+		chromedp.SetValue("(//input)[2]", config.Password),
+		chromedp.Sleep(time.Second),
+		chromedp.Click(`//button[contains(.,"Sign In")]`),
 		browser.SetDownloadBehavior(browser.SetDownloadBehaviorBehaviorAllowAndName).
 			WithDownloadPath(config.DownloadDir).
 			WithEventsEnabled(true),
@@ -59,15 +60,20 @@ func DownloadCsv(config *Config, startDate string, endDate string) (string, erro
 		chromedp.Click(`//div[contains(@class, "modal-body")]//button[.="No"]`, chromedp.NodeVisible),
 	)
 	err = chromedp.Run(ctx,
-		chromedp.Click("#ViewUsageLink", chromedp.NodeVisible),
-		chromedp.Click(`//div[.="Usage Explorer"]`, chromedp.NodeVisible),
-		chromedp.Click(`//img[@alt='Usage Management']`, chromedp.NodeVisible),
+		chromedp.Click(`//button[.="USAGE"]`, chromedp.NodeVisible),
+		chromedp.Click(`//a[.='Usage Management']`, chromedp.NodeVisible),
+		chromedp.Click(`//a[contains(text(), "Download Your Data")]`, chromedp.NodeVisible),
+		chromedp.Click(`//app-usage-management-download-your-data//button[contains(., "Download")]`, chromedp.NodeVisible),
 		chromedp.Sleep(time.Second),
-		chromedp.Click(`(//input[@name="timeFrameRadio"])[3]`, chromedp.NodeVisible),
-		chromedp.SetValue(`(//input[contains(@class, "form-control-readonly")])[1]`, startDate),
-		chromedp.SetValue(`(//input[contains(@class, "form-control-readonly")])[2]`, endDate),
-		chromedp.Click(`(//input[@name="fileFormatRadio"])[2]`),
-		chromedp.Click(`//button[.="Download Usage Data"]`),
+		chromedp.Click(`//div[contains(@class, "interval")]//mat-select`),
+		chromedp.Sleep(time.Second),
+		chromedp.Click(`//mat-option[contains(., "HOURLY")]`, chromedp.NodeVisible),
+		chromedp.SetValue(`//div[contains(@class, "start-picker")]//input`, startDate),
+		chromedp.SetValue(`//div[contains(@class, "end-picker")]//input`, endDate),
+		chromedp.Click(`//div[contains(@class, "file-format")]//mat-select`),
+		chromedp.Click(`//mat-option[contains(., "CSV")]`, chromedp.NodeVisible),
+		chromedp.Sleep(time.Second),
+		chromedp.Click(`//button[.="Download"]`),
 	)
 	if err != nil {
 		return "", err
