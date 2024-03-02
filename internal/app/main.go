@@ -3,29 +3,35 @@ package app
 import (
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"time"
 
+	"github.com/avast/retry-go/v4"
 	"gopkg.in/yaml.v3"
 )
 
-type InfluxDB struct {
-	Host     string
-	User     string
-	Password string
-	Database string
+type InfluxConfig struct {
+	Host     string `yaml:"host"`
+	User     string `yaml:"user"`
+	Password string `yaml:"password"`
+	Database string `yaml:"database"`
+	Insecure bool   `yaml:"insecure"`
+}
+
+type UtilityConfig struct {
+	ApiUrl          string `yaml:"api_url"`
+	Username        string `yaml:"username"`
+	Password        string `yaml:"password"`
+	Account         string `yaml:"account"`
+	ServiceLocation string `yaml:"service_location"`
 }
 
 type Config struct {
-	Username    string
-	Password    string
-	LoginUrl    string
-	DownloadDir string
-	ExtractDays int
-	Timeout     string
-	Headless    bool
-	InfluxDB    InfluxDB
+	ExtractDays int           `yaml:"extract_days"`
+	Utility     UtilityConfig `yaml:"utility"`
+	InfluxDB    InfluxConfig  `yaml:"influxdb"`
 }
 
 func Main() error {
@@ -76,35 +82,44 @@ func Main() error {
 	}
 	log.Printf("Start date: %s\n", startDate)
 	log.Printf("End date: %s\n", endDate)
-	log.Println("Downloading CSV...")
-	path, err := DownloadCsv(config, startDate.Format("01/02/2006"), endDate.Format("01/02/2006"))
-	if err != nil {
-		return err
-	}
-	log.Printf("CSV downloaded: %s\n", path)
-	defer cleanup(path)
 
-	records, err := ParseCsv(path)
+	log.Println("Authenticating with Novec API...")
+	jwt, err := Auth(config.Utility)
 	if err != nil {
 		return err
 	}
+
+	log.Println("Fetching data from Novec API...")
+	usage, err := retry.DoWithData(
+		func() ([]ElectricUsage, error) {
+			r, err := FetchData(startDate, endDate, config.Utility, jwt)
+			if err != nil {
+				return nil, err
+			}
+			records, err := ParseReader(r)
+			if err != nil {
+				return nil, err
+			}
+			return records, nil
+		}, retry.RetryIf(func(err error) bool {
+			var retryableError *RetryableError
+			return errors.As(err, &retryableError)
+		}), retry.Delay(time.Second), retry.Attempts(10))
+
+	if err != nil {
+		return err
+	}
+
 	log.Println("Querying previous metrics...")
 	existingPoints, err := QueryPreviousMetrics(startDate, endDate, config.InfluxDB)
 	if err != nil {
 		return err
 	}
-	log.Println("Inserting data...")
-	err = WriteMetrics(records, config.InfluxDB, existingPoints)
+	fmt.Println("Writing data to database...")
+	err = WriteMetrics(usage, config.InfluxDB, existingPoints)
 	if err != nil {
 		return err
 	}
 	log.Println("Done")
 	return nil
-}
-
-func cleanup(path string) {
-	log.Printf("Removing CSV: %s", path)
-	if err := os.Remove(path); err != nil {
-		log.Printf("Failed to remove CSV: %s", path)
-	}
 }

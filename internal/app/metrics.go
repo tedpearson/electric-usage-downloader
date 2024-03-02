@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -18,8 +19,12 @@ type MetricLine struct {
 	Timestamps []int64
 }
 
-func WriteMetrics(records []*ElectricUsage, config InfluxDB, existingPoints map[int64]struct{}) error {
-	client := influxdb2.NewClient(config.Host, config.User+":"+config.Password)
+func WriteMetrics(records []ElectricUsage, config InfluxConfig, existingPoints map[int64]struct{}) error {
+	opts := influxdb2.DefaultOptions()
+	if config.Insecure {
+		opts.SetTLSConfig(&tls.Config{InsecureSkipVerify: true})
+	}
+	client := influxdb2.NewClientWithOptions(config.Host, config.User+":"+config.Password, opts)
 	writeApi := client.WriteAPIBlocking("", config.Database)
 	for _, record := range records {
 		minutes := record.EndTime.Sub(record.StartTime).Minutes()
@@ -43,8 +48,9 @@ func WriteMetrics(records []*ElectricUsage, config InfluxDB, existingPoints map[
 	return nil
 }
 
-func QueryPreviousMetrics(startTime time.Time, endTime time.Time, config InfluxDB) (map[int64]struct{}, error) {
+func QueryPreviousMetrics(startTime time.Time, endTime time.Time, config InfluxConfig) (map[int64]struct{}, error) {
 	client := &http.Client{}
+	http.DefaultTransport.(*http.Transport).TLSClientConfig = &tls.Config{InsecureSkipVerify: true}
 	v := url.Values{
 		"match[]": {"electric_usage"},
 		"start":   {startTime.Format(`2006-01-02T15:04:05Z07:00`)},

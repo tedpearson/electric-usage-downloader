@@ -1,14 +1,12 @@
 package app
 
 import (
-	"bufio"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
 	"log"
-	"os"
-	"regexp"
-	"strings"
 	"time"
-
-	"github.com/shopspring/decimal"
 )
 
 type ElectricUsage struct {
@@ -18,60 +16,86 @@ type ElectricUsage struct {
 	CostInCents int64
 }
 
-func ParseCsv(file string) ([]*ElectricUsage, error) {
-	dateRegex, err := regexp.Compile(`(\d{4}-\d\d-\d\d \d\d:\d\d) to (\d{4}-\d\d-\d\d \d\d:\d\d)`)
-	if err != nil {
-		panic(err)
-	}
-	// drop all lines until it starts with dddd-dd-dd
-	data, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
+type Response struct {
+	Status string                 `json:"status"`
+	Data   map[string][]NovecData `json:"data"`
+}
+
+type NovecData struct {
+	Type   string        `json:"type"`
+	Series []NovecSeries `json:"series"`
+}
+
+type NovecSeries struct {
+	Data []NovecPoint `json:"data"`
+}
+
+type NovecPoint struct {
+	UnixMillis int64   `json:"x"`
+	Value      float64 `json:"y"`
+}
+
+type RetryableError struct {
+	Msg string
+}
+
+func NewRetryableError(msg string) *RetryableError {
+	return &RetryableError{Msg: msg}
+}
+
+func (t *RetryableError) Error() string {
+	return t.Msg
+}
+
+func ParseReader(reader io.ReadCloser) ([]ElectricUsage, error) {
 	defer func() {
-		if err := data.Close(); err != nil {
+		if err := reader.Close(); err != nil {
 			panic(err)
 		}
 	}()
-	scanner := bufio.NewScanner(data)
-
-	records := make([]*ElectricUsage, 0, 100)
-	for scanner.Scan() {
-		line := scanner.Text()
-		matches := dateRegex.FindStringSubmatch(line)
-		if matches != nil {
-			cols := strings.Split(line, ",")
-			usage := parseRecord(cols, matches[1:3])
-			records = append(records, usage)
+	resp := &Response{}
+	err := json.NewDecoder(reader).Decode(resp)
+	if err != nil {
+		return nil, err
+	}
+	if resp.Status != "COMPLETE" {
+		log.Println("Data not ready, retrying...")
+		return nil, NewRetryableError("data processing not complete")
+	}
+	fmt.Println("Data received, parsing...")
+	datas, ok := resp.Data["ELECTRIC"]
+	if !ok {
+		return nil, errors.New("no ELECTRIC key")
+	}
+	var usageSeries, costSeries []NovecPoint
+	for _, data := range datas {
+		switch data.Type {
+		case "USAGE":
+			usageSeries = data.Series[0].Data
+		case "COST":
+			costSeries = data.Series[0].Data
 		}
 	}
+	// this is dumb, but the novec smarthub api returns "unix timestamps"
+	// that are based on EST (which is incorrect), at least as of 2/29/2024.
+	// Example: For Midnight, Jan 1, 1970, EST, this api would return "0"
+	//          However, the correct value (UTC) would be "18000".
+	zone, err := time.LoadLocation("America/New_York")
+	if err != nil {
+		return nil, err
+	}
+	_, offset := time.Now().In(zone).Zone()
+	period := time.UnixMilli(usageSeries[1].UnixMillis).Sub(time.UnixMilli(usageSeries[0].UnixMillis))
+	records := make([]ElectricUsage, len(usageSeries))
+	for i := range usageSeries {
+		usage := usageSeries[i]
+		cost := costSeries[i]
+		// see note above about "unix timestamps"
+		start := time.UnixMilli(usage.UnixMillis).Add(time.Second * time.Duration(-offset))
+		records[i].StartTime = start
+		records[i].EndTime = start.Add(period)
+		records[i].WattHours = int64(usage.Value * 1000)
+		records[i].CostInCents = int64(cost.Value * 100)
+	}
 	return records, nil
-}
-
-func parseRecord(row []string, dates []string) *ElectricUsage {
-	if len(row) < 3 {
-		log.Printf("Bad record: %s\n", row)
-		return nil
-	}
-	startTime, err1 := time.ParseInLocation("2006-01-02 15:04", dates[0], time.Local)
-	endTime, err2 := time.ParseInLocation("2006-01-02 15:04", dates[1], time.Local)
-	kilowattHours, err3 := parseDecimal(row[1])
-	cents, err4 := parseDecimal(row[2])
-	if err1 != nil || err2 != nil || err3 != nil || err4 != nil {
-		log.Printf("Bad record: %s\n", row)
-		return nil
-	}
-	return &ElectricUsage{
-		StartTime:   startTime,
-		EndTime:     endTime,
-		WattHours:   kilowattHours.Mul(decimal.NewFromInt(1000)).IntPart(),
-		CostInCents: cents.Mul(decimal.NewFromInt(100)).IntPart(),
-	}
-}
-
-func parseDecimal(s string) (decimal.Decimal, error) {
-	if s == "" {
-		return decimal.NewFromInt(0), nil
-	}
-	return decimal.NewFromString(s)
 }
