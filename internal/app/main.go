@@ -109,14 +109,8 @@ func Main() error {
 	if err != nil {
 		return err
 	}
-
-	log.Println("Querying previous metrics...")
-	existingPoints, err := QueryPreviousMetrics(startDate, endDate, config.InfluxDB)
-	if err != nil {
-		return err
-	}
 	fmt.Println("Writing data to database...")
-	err = WriteMetrics(usage, config.InfluxDB, existingPoints)
+	err = WriteMetrics(usage, config.InfluxDB)
 	if err != nil {
 		return err
 	}
