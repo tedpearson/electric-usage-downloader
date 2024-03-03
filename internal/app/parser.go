@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"time"
 )
 
@@ -77,7 +76,7 @@ func ParseReader(reader io.ReadCloser) ([]ElectricUsage, error) {
 		return nil, err
 	}
 	if resp.Status != "COMPLETE" {
-		log.Println("Data not ready, retrying...")
+		fmt.Println("Data not ready, retrying...")
 		return nil, NewRetryableError("data processing not complete")
 	}
 	fmt.Println("Data received, parsing...")

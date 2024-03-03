@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -86,16 +85,16 @@ func Main() error {
 		// subtract N days and 1 minute to get the start date
 		startDate = endDate.Add(time.Duration(-config.ExtractDays) * 24 * time.Hour).Add(time.Minute)
 	}
-	log.Printf("Start date: %s\n", startDate)
-	log.Printf("End date: %s\n", endDate)
+	fmt.Printf("Start date: %s\n", startDate)
+	fmt.Printf("End date: %s\n", endDate)
 
-	log.Println("Authenticating with Novec API...")
+	fmt.Println("Authenticating with Novec API...")
 	jwt, err := Auth(config.Utility)
 	if err != nil {
 		return err
 	}
 
-	log.Println("Fetching data from Novec API...")
+	fmt.Println("Fetching data from Novec API...")
 	usage, err := retry.DoWithData(
 		func() ([]ElectricUsage, error) {
 			r, err := FetchData(startDate, endDate, config.Utility, jwt)
@@ -120,6 +119,6 @@ func Main() error {
 	if err != nil {
 		return err
 	}
-	log.Println("Done")
+	fmt.Println("Done")
 	return nil
 }
