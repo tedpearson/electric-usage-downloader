@@ -12,10 +12,12 @@ import (
 	"time"
 )
 
+// OAuth holds a json web token parsed from the auth response.
 type OAuth struct {
 	AuthorizationToken string `json:"authorizationToken"`
 }
 
+// Auth authenticates with the api and returns a json web token for use with the api.
 func Auth(config UtilityConfig) (string, error) {
 	client := &http.Client{}
 	postData := fmt.Sprintf("userId=%s&password=%s", config.Username, config.Password)
@@ -43,6 +45,7 @@ func Auth(config UtilityConfig) (string, error) {
 	return oauth.AuthorizationToken, nil
 }
 
+// PollRequest is request information sent to the api to fetch data.
 type PollRequest struct {
 	TimeFrame       string   `json:"timeFrame"`
 	UserId          string   `json:"userId"`
@@ -55,6 +58,9 @@ type PollRequest struct {
 	EndDateTime     int64    `json:"endDateTime"`
 }
 
+// FetchData calls the api to get data for a particular time period.
+// Note that the api may return a PENDING status or actual data.
+// However, parsing of the response is handled in ParseReader.
 func FetchData(start, end time.Time, config UtilityConfig, jwt string) (io.ReadCloser, error) {
 	client := http.Client{}
 	pollRequest := PollRequest{

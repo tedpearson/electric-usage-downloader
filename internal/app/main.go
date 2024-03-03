@@ -12,6 +12,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// InfluxConfig is the config for the VictoriaMetrics connection, via the influxdb client.
 type InfluxConfig struct {
 	Host     string `yaml:"host"`
 	User     string `yaml:"user"`
@@ -20,6 +21,10 @@ type InfluxConfig struct {
 	Insecure bool   `yaml:"insecure"`
 }
 
+// UtilityConfig is the config for Novec.
+// Password is hashed or encrypted in some unknown way, and must be retrieved from your browser. (TBD)
+// Account is your account number, available on your bill.
+// ServiceLocation appears to be an internal number, and must be retrieved from your browser. (TBD)
 type UtilityConfig struct {
 	ApiUrl          string `yaml:"api_url"`
 	Username        string `yaml:"username"`
@@ -28,12 +33,14 @@ type UtilityConfig struct {
 	ServiceLocation string `yaml:"service_location"`
 }
 
+// Config is the config format for electric-usage-downloader
 type Config struct {
 	ExtractDays int           `yaml:"extract_days"`
 	Utility     UtilityConfig `yaml:"utility"`
 	InfluxDB    InfluxConfig  `yaml:"influxdb"`
 }
 
+// Main runs the program.
 func Main() error {
 	configFlag := flag.String("config", "config.yaml", "Config file")
 	startFlag := flag.String("start", "", "Start date of period to extract from electric co.")

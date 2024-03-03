@@ -9,6 +9,8 @@ import (
 	"github.com/influxdata/influxdb-client-go/v2/api/write"
 )
 
+// WriteMetrics writes ElectricUsage data to victoriametrics.
+// This method writes a point every minute instead of following the time span of ElectricUsage.
 func WriteMetrics(records []ElectricUsage, config InfluxConfig) error {
 	opts := influxdb2.DefaultOptions()
 	if config.Insecure {
