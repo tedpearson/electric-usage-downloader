@@ -14,17 +14,16 @@ import (
 
 // InfluxConfig is the config for the VictoriaMetrics connection, via the influxdb client.
 type InfluxConfig struct {
-	Host     string `yaml:"host"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
-	Database string `yaml:"database"`
-	Insecure bool   `yaml:"insecure"`
+	Host      string `yaml:"host"`
+	AuthToken string `yaml:"auth_token"`
+	Database  string `yaml:"database"`
+	Insecure  bool   `yaml:"insecure"`
 }
 
 // UtilityConfig is the config for Novec.
-// Password is hashed or encrypted in some unknown way, and must be retrieved from your browser. (TBD)
+// Password is hashed or encrypted in some unknown way, and must be retrieved from your browser. See README.md.
 // Account is your account number, available on your bill.
-// ServiceLocation appears to be an internal number, and must be retrieved from your browser. (TBD)
+// ServiceLocation appears to be an internal number, and must be retrieved from your browser. See README.md.
 type UtilityConfig struct {
 	ApiUrl          string `yaml:"api_url"`
 	Username        string `yaml:"username"`

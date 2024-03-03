@@ -1,0 +1,713 @@
+{
+  "datasource": {
+    "uid": "muVvfZRRk",
+    "type": "prometheus"
+  },
+  "gridPos": {
+    "h": 8,
+    "w": 24,
+    "x": 0,
+    "y": 12
+  },
+  "id": 42,
+  "libraryPanel": {
+    "id": 10,
+    "orgId": 1,
+    "folderId": 1,
+    "folderUid": "5U7ivm5Vz",
+    "uid": "RdJAYIWgz",
+    "name": "Electric usage (last 7 days)",
+    "kind": 1,
+    "type": "timeseries",
+    "description": "",
+    "model": {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "muVvfZRRk"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 1,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "watt",
+          "unitScale": true
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "cumulative"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "right"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byRegexp",
+              "options": "/(Heat|Cool|Aux).*/"
+            },
+            "properties": [
+              {
+                "id": "custom.fillOpacity",
+                "value": 27
+              },
+              {
+                "id": "custom.lineWidth",
+                "value": 0
+              },
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              },
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "unit",
+                "value": "bool_on_off"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Heat 1"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "semi-dark-orange",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Heat 2"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-red",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cool 1"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "super-light-blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cool 2"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Aux"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "dark-purple",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 12
+      },
+      "id": 42,
+      "interval": null,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "muVvfZRRk"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "electric_watts",
+          "hide": false,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "muVvfZRRk"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "running_sum(sum_over_time(electric_watts))/60",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "cumulative",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "muVvfZRRk"
+          },
+          "exemplar": true,
+          "expr": "avg_over_time(electric_watts[1d])",
+          "hide": false,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "1d",
+          "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "muVvfZRRk"
+          },
+          "exemplar": true,
+          "expr": "avg_over_time(electric_watts[7d])",
+          "hide": true,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "7d",
+          "refId": "D"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "muVvfZRRk"
+          },
+          "exemplar": true,
+          "expr": "avg_over_time(electric_watts[30d])",
+          "hide": true,
+          "instant": false,
+          "interval": "",
+          "legendFormat": "30d",
+          "refId": "E"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "muVvfZRRk"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "WITH (\n    metric = thermostat_heat_1,\n)\navg(metric[5m])",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Heat 1",
+          "range": true,
+          "refId": "F"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "muVvfZRRk"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "WITH (\n    metric = thermostat_heat_2,\n)\navg(metric[5m])",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Heat 2",
+          "range": true,
+          "refId": "G"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "muVvfZRRk"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "WITH (\n    metric = thermostat_cool_1,\n)\navg(metric[5m])",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Cool 1",
+          "range": true,
+          "refId": "H"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "muVvfZRRk"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "WITH (\n    metric = thermostat_cool_2,\n)\navg(metric[5m])",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Cool 2",
+          "range": true,
+          "refId": "I"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "muVvfZRRk"
+          },
+          "editorMode": "code",
+          "exemplar": true,
+          "expr": "WITH (\n    metric = thermostat_aux_heat_1\n)\navg(metric[5m])",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "Aux",
+          "range": true,
+          "refId": "J"
+        }
+      ],
+      "timeFrom": null,
+      "title": "Electric usage",
+      "type": "timeseries"
+    },
+    "version": 2,
+    "meta": {
+      "folderName": "UniFi Reference",
+      "folderUid": "5U7ivm5Vz",
+      "connectedDashboards": 2,
+      "created": "2023-10-16T22:02:50-04:00",
+      "updated": "2024-03-02T20:24:34-05:00",
+      "createdBy": {
+        "avatarUrl": "",
+        "id": 0,
+        "name": ""
+      },
+      "updatedBy": {
+        "avatarUrl": "/avatar/46d229b033af06a191ff2267bca9ae56",
+        "id": 1,
+        "name": "ted"
+      }
+    }
+  },
+  "title": "Electric usage",
+  "targets": [
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "muVvfZRRk"
+      },
+      "editorMode": "code",
+      "exemplar": true,
+      "expr": "electric_watts",
+      "hide": false,
+      "instant": false,
+      "interval": "",
+      "legendFormat": "",
+      "refId": "A"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "muVvfZRRk"
+      },
+      "editorMode": "code",
+      "exemplar": true,
+      "expr": "running_sum(sum_over_time(electric_watts))/60",
+      "hide": false,
+      "interval": "",
+      "legendFormat": "cumulative",
+      "range": true,
+      "refId": "B"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "muVvfZRRk"
+      },
+      "exemplar": true,
+      "expr": "avg_over_time(electric_watts[1d])",
+      "hide": false,
+      "instant": false,
+      "interval": "",
+      "legendFormat": "1d",
+      "refId": "C"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "muVvfZRRk"
+      },
+      "exemplar": true,
+      "expr": "avg_over_time(electric_watts[7d])",
+      "hide": false,
+      "instant": false,
+      "interval": "",
+      "legendFormat": "7d",
+      "refId": "D"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "muVvfZRRk"
+      },
+      "exemplar": true,
+      "expr": "avg_over_time(electric_watts[30d])",
+      "hide": true,
+      "instant": false,
+      "interval": "",
+      "legendFormat": "30d",
+      "refId": "E"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "muVvfZRRk"
+      },
+      "editorMode": "code",
+      "exemplar": true,
+      "expr": "WITH (\n    metric = thermostat_heat_1,\n)\navg(metric[5m])",
+      "hide": false,
+      "interval": "",
+      "legendFormat": "Heat 1",
+      "range": true,
+      "refId": "F"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "muVvfZRRk"
+      },
+      "editorMode": "code",
+      "exemplar": true,
+      "expr": "WITH (\n    metric = thermostat_heat_2,\n)\navg(metric[5m])",
+      "hide": false,
+      "interval": "",
+      "legendFormat": "Heat 2",
+      "range": true,
+      "refId": "G"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "muVvfZRRk"
+      },
+      "editorMode": "code",
+      "exemplar": true,
+      "expr": "WITH (\n    metric = thermostat_cool_1,\n)\navg(metric[5m])",
+      "hide": false,
+      "interval": "",
+      "legendFormat": "Cool 1",
+      "range": true,
+      "refId": "H"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "muVvfZRRk"
+      },
+      "editorMode": "code",
+      "exemplar": true,
+      "expr": "WITH (\n    metric = thermostat_cool_2,\n)\navg(metric[5m])",
+      "hide": false,
+      "interval": "",
+      "legendFormat": "Cool 2",
+      "range": true,
+      "refId": "I"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "muVvfZRRk"
+      },
+      "editorMode": "code",
+      "exemplar": true,
+      "expr": "WITH (\n    metric = thermostat_aux_heat_1\n)\navg(metric[5m])",
+      "hide": false,
+      "interval": "",
+      "legendFormat": "Aux",
+      "range": true,
+      "refId": "J"
+    }
+  ],
+  "options": {
+    "tooltip": {
+      "mode": "multi",
+      "sort": "none"
+    },
+    "legend": {
+      "showLegend": true,
+      "displayMode": "list",
+      "placement": "bottom",
+      "calcs": []
+    }
+  },
+  "fieldConfig": {
+    "defaults": {
+      "custom": {
+        "drawStyle": "line",
+        "lineInterpolation": "linear",
+        "barAlignment": 0,
+        "lineWidth": 1,
+        "fillOpacity": 0,
+        "gradientMode": "none",
+        "spanNulls": false,
+        "insertNulls": false,
+        "showPoints": "auto",
+        "pointSize": 5,
+        "stacking": {
+          "mode": "none",
+          "group": "A"
+        },
+        "axisPlacement": "auto",
+        "axisLabel": "",
+        "axisColorMode": "text",
+        "axisBorderShow": false,
+        "scaleDistribution": {
+          "type": "linear"
+        },
+        "axisCenteredZero": false,
+        "hideFrom": {
+          "tooltip": false,
+          "viz": false,
+          "legend": false
+        },
+        "thresholdsStyle": {
+          "mode": "off"
+        },
+        "axisSoftMax": 1
+      },
+      "unitScale": true,
+      "color": {
+        "mode": "palette-classic"
+      },
+      "mappings": [],
+      "thresholds": {
+        "mode": "absolute",
+        "steps": [
+          {
+            "color": "green",
+            "value": null
+          },
+          {
+            "color": "red",
+            "value": 80
+          }
+        ]
+      },
+      "unit": "watt"
+    },
+    "overrides": [
+      {
+        "matcher": {
+          "id": "byName",
+          "options": "cumulative"
+        },
+        "properties": [
+          {
+            "id": "custom.axisPlacement",
+            "value": "right"
+          }
+        ]
+      },
+      {
+        "matcher": {
+          "id": "byRegexp",
+          "options": "/(Heat|Cool|Aux).*/"
+        },
+        "properties": [
+          {
+            "id": "custom.fillOpacity",
+            "value": 27
+          },
+          {
+            "id": "custom.lineWidth",
+            "value": 0
+          },
+          {
+            "id": "custom.axisPlacement",
+            "value": "hidden"
+          },
+          {
+            "id": "unit",
+            "value": "none"
+          },
+          {
+            "id": "unit",
+            "value": "bool_on_off"
+          }
+        ]
+      },
+      {
+        "matcher": {
+          "id": "byName",
+          "options": "Heat 1"
+        },
+        "properties": [
+          {
+            "id": "color",
+            "value": {
+              "fixedColor": "semi-dark-orange",
+              "mode": "fixed"
+            }
+          }
+        ]
+      },
+      {
+        "matcher": {
+          "id": "byName",
+          "options": "Heat 2"
+        },
+        "properties": [
+          {
+            "id": "color",
+            "value": {
+              "fixedColor": "dark-red",
+              "mode": "fixed"
+            }
+          }
+        ]
+      },
+      {
+        "matcher": {
+          "id": "byName",
+          "options": "Cool 1"
+        },
+        "properties": [
+          {
+            "id": "color",
+            "value": {
+              "fixedColor": "super-light-blue",
+              "mode": "fixed"
+            }
+          }
+        ]
+      },
+      {
+        "matcher": {
+          "id": "byName",
+          "options": "Cool 2"
+        },
+        "properties": [
+          {
+            "id": "color",
+            "value": {
+              "fixedColor": "blue",
+              "mode": "fixed"
+            }
+          }
+        ]
+      },
+      {
+        "matcher": {
+          "id": "byName",
+          "options": "Aux"
+        },
+        "properties": [
+          {
+            "id": "color",
+            "value": {
+              "fixedColor": "dark-purple",
+              "mode": "fixed"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "description": "",
+  "interval": null,
+  "timeFrom": null,
+  "type": "timeseries"
+}
