@@ -20,7 +20,6 @@ type InfluxConfig struct {
 }
 
 // UtilityConfig is the config for Novec.
-// Password is hashed or encrypted in some unknown way, and must be retrieved from your browser. See README.md.
 // Account is your account number, available on your bill.
 // ServiceLocation appears to be an internal number, and must be retrieved from your browser. See README.md.
 type UtilityConfig struct {

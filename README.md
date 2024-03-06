@@ -13,12 +13,6 @@ Download [config.example.yaml](config.example.yaml) and fill in your own values.
   if specific `--start` and `--end` flags are not specified.
 - `account` is your account number, available on your bill and on the 
   Novec smart hub website.
-- `password` is hashed or encrypted in some unknown way, and must be retrieved from your browser:
-  - Navigate to https://novec.smarthub.coop/ui/#/login
-  - Open the Developer tools to the Network tab
-  - Login.
-  - Find a call to `https://novec.smarthub.coop/services/oauth/auth/v2` in the Network tab
-  - Open the call, and copy the `password` field from the Payload tab.
 - `service_location` is an internal Novec number. and must be retrieved from your browser:
   - Open the Developer tools to the Network tab
   - Navigate to [Usage Explorer](https://novec.smarthub.coop/ui/#/usageExplorer)
