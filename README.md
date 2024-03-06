@@ -30,6 +30,7 @@ Download [config.example.yaml](config.example.yaml) and fill in your own values.
 - To download and insert the last `extract_days`, run like this arguments: `electric-usage-downloader --config config.yaml`
 - To download and insert a specific date range, run with arguments: 
   `electric-usage-downloader --config config.yaml --start 2024-01-16 --end 2024-01-17`
+- The `--debug` flag can be used to log responses from the API for assistance debugging issues.
 
 ## Details
 
