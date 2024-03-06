@@ -20,11 +20,13 @@ type OAuth struct {
 // Auth authenticates with the api and returns a json web token for use with the api.
 func Auth(config UtilityConfig) (string, error) {
 	client := &http.Client{}
-	postData := fmt.Sprintf("userId=%s&password=%s", config.Username, config.Password)
+	formData := url.Values{}
+	formData.Set("userId", config.Username)
+	formData.Set("password", config.Password)
 	authUrl := fmt.Sprintf("%s/services/oauth/auth/v2", config.ApiUrl)
 	parsed, err := url.Parse(config.ApiUrl)
 	authority := parsed.Hostname()
-	req, err := http.NewRequest("POST", authUrl, strings.NewReader(postData))
+	req, err := http.NewRequest("POST", authUrl, strings.NewReader(formData.Encode()))
 	if err != nil {
 		return "", err
 	}
