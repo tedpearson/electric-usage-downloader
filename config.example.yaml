@@ -1,5 +1,5 @@
 extract_days: 10
-utility:
+smarthub:
   api_url: https://novec.smarthub.coop
   username: johndoe@gmail.com
   password: smarthub_password

@@ -18,7 +18,7 @@ type OAuth struct {
 }
 
 // Auth authenticates with the api and returns a json web token for use with the api.
-func Auth(config UtilityConfig) (string, error) {
+func Auth(config SmartHubConfig) (string, error) {
 	client := &http.Client{}
 	formData := url.Values{}
 	formData.Set("userId", config.Username)
@@ -63,7 +63,7 @@ type PollRequest struct {
 // FetchData calls the api to get data for a particular time period.
 // Note that the api may return a PENDING status or actual data.
 // However, parsing of the response is handled in ParseReader.
-func FetchData(start, end time.Time, config UtilityConfig, jwt string) (io.ReadCloser, error) {
+func FetchData(start, end time.Time, config SmartHubConfig, jwt string) (io.ReadCloser, error) {
 	client := http.Client{}
 	pollRequest := PollRequest{
 		TimeFrame:       "HOURLY",

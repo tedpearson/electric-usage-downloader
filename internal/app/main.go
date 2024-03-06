@@ -19,10 +19,10 @@ type InfluxConfig struct {
 	Insecure  bool   `yaml:"insecure"`
 }
 
-// UtilityConfig is the config for SmartHub.
+// SmartHubConfig is the config for SmartHub.
 // Account is your account number, available on your bill.
 // ServiceLocation appears to be an internal number, and must be retrieved from your browser. See README.md.
-type UtilityConfig struct {
+type SmartHubConfig struct {
 	ApiUrl          string `yaml:"api_url"`
 	Username        string `yaml:"username"`
 	Password        string `yaml:"password"`
@@ -32,9 +32,9 @@ type UtilityConfig struct {
 
 // Config is the config format for electric-usage-downloader
 type Config struct {
-	ExtractDays int           `yaml:"extract_days"`
-	Utility     UtilityConfig `yaml:"utility"`
-	InfluxDB    InfluxConfig  `yaml:"influxdb"`
+	ExtractDays int            `yaml:"extract_days"`
+	SmartHub    SmartHubConfig `yaml:"smarthub"`
+	InfluxDB    InfluxConfig   `yaml:"influxdb"`
 }
 
 // Main runs the program.
@@ -87,8 +87,8 @@ func Main() error {
 	fmt.Printf("Start date: %s\n", startDate)
 	fmt.Printf("End date: %s\n", endDate)
 
-	jwt, err := Auth(config.Utility)
 	fmt.Println("Authenticating with SmartHub API...")
+	jwt, err := Auth(config.SmartHub)
 	if err != nil {
 		return err
 	}
@@ -96,7 +96,7 @@ func Main() error {
 	fmt.Println("Fetching data from SmartHub API...")
 	usage, err := retry.DoWithData(
 		func() ([]ElectricUsage, error) {
-			r, err := FetchData(startDate, endDate, config.Utility, jwt)
+			r, err := FetchData(startDate, endDate, config.SmartHub, jwt)
 			if err != nil {
 				return nil, err
 			}
