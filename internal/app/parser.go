@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"os"
 	"time"
 )
 
@@ -64,22 +65,31 @@ func (t *RetryableError) Error() string {
 
 // ParseReader parses the json response received in FetchData from the SmartHub poll api.
 // It can return a normal error, a RetryableError, or parsed ElectricUsage.
-func ParseReader(reader io.ReadCloser) ([]ElectricUsage, error) {
+func ParseReader(readCloser io.ReadCloser) ([]ElectricUsage, error) {
 	defer func() {
-		if err := reader.Close(); err != nil {
-			panic(err)
+		if err := readCloser.Close(); err != nil {
+			fmt.Println("Error: failed to close response body")
 		}
 	}()
+	reader := readCloser.(io.Reader)
+	if debug {
+		_, _ = fmt.Fprintln(os.Stderr, "\nDEBUG: Response from poll endpoint:")
+		reader = io.TeeReader(readCloser, os.Stderr)
+	}
 	resp := &Response{}
 	err := json.NewDecoder(reader).Decode(resp)
 	if err != nil {
 		return nil, err
 	}
+	if debug {
+		_, _ = fmt.Fprintln(os.Stderr, "\n\nDEBUG: Parsed data from poll endpoint:")
+		_, _ = fmt.Fprintf(os.Stderr, "%+v\n\n", resp)
+	}
 	if resp.Status != "COMPLETE" {
 		fmt.Println("Data not ready, retrying...")
 		return nil, NewRetryableError("data processing not complete")
 	}
-	fmt.Println("Data received, parsing...")
+	fmt.Println("Data received, transforming...")
 	datas, ok := resp.Data["ELECTRIC"]
 	if !ok {
 		return nil, errors.New("no ELECTRIC key")

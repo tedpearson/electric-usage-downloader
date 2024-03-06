@@ -8,6 +8,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"os"
 	"strings"
 	"time"
 )
@@ -35,9 +36,23 @@ func Auth(config SmartHubConfig) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	decoder := json.NewDecoder(resp.Body)
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			fmt.Println("Error: failed to close response body")
+		}
+	}(resp.Body)
+	reader := resp.Body.(io.Reader)
+	if debug {
+		_, _ = fmt.Fprintln(os.Stderr, "\nDEBUG: Response from auth endpoint:")
+		reader = io.TeeReader(reader, os.Stderr)
+	}
+	decoder := json.NewDecoder(reader)
 	oauth := &OAuth{}
 	err = decoder.Decode(oauth)
+	if debug {
+		_, _ = fmt.Fprintf(os.Stderr, "\n\n")
+	}
 	if err != nil {
 		return "", err
 	}

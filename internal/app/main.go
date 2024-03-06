@@ -37,13 +37,17 @@ type Config struct {
 	InfluxDB    InfluxConfig   `yaml:"influxdb"`
 }
 
+var debug bool
+
 // Main runs the program.
 func Main() error {
 	configFlag := flag.String("config", "config.yaml", "Config file")
 	startFlag := flag.String("start", "", "Start date of period to extract from electric co.")
 	endFlag := flag.String("end", "", "End date of period to extract from electric co.")
+	debugFlag := flag.Bool("debug", false, "Enable to print out verbose debugging logs.")
 	flag.Parse()
 
+	debug = *debugFlag
 	// read config
 	file, err := os.ReadFile(*configFlag)
 	if err != nil {
