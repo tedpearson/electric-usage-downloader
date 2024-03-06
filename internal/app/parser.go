@@ -14,7 +14,7 @@ type ElectricUsage struct {
 	StartTime   time.Time
 	EndTime     time.Time
 	WattHours   int64
-	CostInCents int64
+	CostInCents *int64
 }
 
 // Response holds the parsed response from the SmartHub poll api.
@@ -116,13 +116,16 @@ func ParseReader(readCloser io.ReadCloser) ([]ElectricUsage, error) {
 	records := make([]ElectricUsage, len(usageSeries))
 	for i := range usageSeries {
 		usage := usageSeries[i]
-		cost := costSeries[i]
 		// see note above about "unix timestamps"
 		start := time.UnixMilli(usage.UnixMillis).Add(time.Second * time.Duration(-offset))
 		records[i].StartTime = start
 		records[i].EndTime = start.Add(period)
 		records[i].WattHours = int64(usage.Value * 1000)
-		records[i].CostInCents = int64(cost.Value * 100)
+	}
+	// note: cost is not returned by all SmartHub implementations. So this is a no-op sometimes.
+	for i := range costSeries {
+		cost := int64(costSeries[i].Value * 100)
+		records[i].CostInCents = &cost
 	}
 	return records, nil
 }

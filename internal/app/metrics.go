@@ -25,8 +25,10 @@ func WriteMetrics(records []ElectricUsage, config InfluxConfig) error {
 		for t := record.StartTime; record.EndTime.After(t); t = t.Add(time.Minute) {
 			point := influxdb2.NewPointWithMeasurement("electric").
 				SetTime(t).
-				AddField("watts", float64(record.WattHours)*multiplier).
-				AddField("cost", float64(record.CostInCents)/minutes)
+				AddField("watts", float64(record.WattHours)*multiplier)
+			if record.CostInCents != nil {
+				point.AddField("cost", float64(*record.CostInCents)/minutes)
+			}
 			points = append(points, point)
 		}
 		err := writeApi.WritePoint(context.Background(), points...)
