@@ -1,6 +1,6 @@
 # electric-usage-downloader
 
-This project reverse engineers the [NISC SmartHub]()https://www.nisc.coop/blog/beyond-the-bill-the-power-of-smarthub/
+This project reverse engineers the [NISC SmartHub](https://www.nisc.coop/blog/beyond-the-bill-the-power-of-smarthub/)
 api, which is used by hundreds of utility co-ops throughout the United States. This allows
 downloading 15-minute resolution electic usage and cost data for your personal account if you have a smart meter.
 
