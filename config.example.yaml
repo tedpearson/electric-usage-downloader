@@ -2,7 +2,7 @@ extract_days: 10
 utility:
   api_url: https://novec.smarthub.coop
   username: johndoe@gmail.com
-  password: novec_password
+  password: smarthub_password
   account: 1234567001
   service_location: 123456
 influxdb:

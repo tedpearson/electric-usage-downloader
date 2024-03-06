@@ -19,7 +19,7 @@ type InfluxConfig struct {
 	Insecure  bool   `yaml:"insecure"`
 }
 
-// UtilityConfig is the config for Novec.
+// UtilityConfig is the config for SmartHub.
 // Account is your account number, available on your bill.
 // ServiceLocation appears to be an internal number, and must be retrieved from your browser. See README.md.
 type UtilityConfig struct {
@@ -87,13 +87,13 @@ func Main() error {
 	fmt.Printf("Start date: %s\n", startDate)
 	fmt.Printf("End date: %s\n", endDate)
 
-	fmt.Println("Authenticating with Novec API...")
 	jwt, err := Auth(config.Utility)
+	fmt.Println("Authenticating with SmartHub API...")
 	if err != nil {
 		return err
 	}
 
-	fmt.Println("Fetching data from Novec API...")
+	fmt.Println("Fetching data from SmartHub API...")
 	usage, err := retry.DoWithData(
 		func() ([]ElectricUsage, error) {
 			r, err := FetchData(startDate, endDate, config.Utility, jwt)

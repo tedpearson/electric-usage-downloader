@@ -16,32 +16,32 @@ type ElectricUsage struct {
 	CostInCents int64
 }
 
-// Response holds the parsed response from the Novec poll api.
+// Response holds the parsed response from the SmartHub poll api.
 // If Status is "PENDING", this means we need to make the same request again
 // as data is still being prepared.
 type Response struct {
-	Status string                 `json:"status"`
-	Data   map[string][]NovecData `json:"data"`
+	Status string                    `json:"status"`
+	Data   map[string][]SmartHubData `json:"data"`
 }
 
-// NovecData holds parsed response data from the Novec poll api.
+// SmartHubData holds parsed response data from the SmartHub poll api.
 // It holds the Type of data ("USAGE" or "COST"), and the Series
-type NovecData struct {
-	Type   string        `json:"type"`
-	Series []NovecSeries `json:"series"`
+type SmartHubData struct {
+	Type   string           `json:"type"`
+	Series []SmartHubSeries `json:"series"`
 }
 
-// NovecSeries holds parsed response data from the Novec poll api.
-// It holds a list of NovecPoints.
-type NovecSeries struct {
-	Data []NovecPoint `json:"data"`
+// SmartHubSeries holds parsed response data from the SmartHub poll api.
+// It holds a list of SmartHubPoints.
+type SmartHubSeries struct {
+	Data []SmartHubPoint `json:"data"`
 }
 
-// NovecPoint  holds parsed response data from the Novec poll api.
+// SmartHubPoint  holds parsed response data from the SmartHub poll api.
 // It holds a timestamp, UnixMillis, which is actually in the America/New_York timezone instead of
 // UTC as it should be.
 // It also holds the Value of the point in dollars or kWh.
-type NovecPoint struct {
+type SmartHubPoint struct {
 	UnixMillis int64   `json:"x"`
 	Value      float64 `json:"y"`
 }
@@ -62,7 +62,7 @@ func (t *RetryableError) Error() string {
 	return t.Msg
 }
 
-// ParseReader parses the json response received in FetchData from the Novec poll api.
+// ParseReader parses the json response received in FetchData from the SmartHub poll api.
 // It can return a normal error, a RetryableError, or parsed ElectricUsage.
 func ParseReader(reader io.ReadCloser) ([]ElectricUsage, error) {
 	defer func() {
@@ -84,7 +84,7 @@ func ParseReader(reader io.ReadCloser) ([]ElectricUsage, error) {
 	if !ok {
 		return nil, errors.New("no ELECTRIC key")
 	}
-	var usageSeries, costSeries []NovecPoint
+	var usageSeries, costSeries []SmartHubPoint
 	for _, data := range datas {
 		switch data.Type {
 		case "USAGE":
@@ -93,7 +93,7 @@ func ParseReader(reader io.ReadCloser) ([]ElectricUsage, error) {
 			costSeries = data.Series[0].Data
 		}
 	}
-	// this is dumb, but the novec smarthub api returns "unix timestamps"
+	// this is dumb, but the SmartHub api returns "unix timestamps"
 	// that are based on EST (which is incorrect), at least as of 2/29/2024.
 	// Example: For Midnight, Jan 1, 1970, EST, this api would return "0"
 	//          However, the correct value (UTC) would be "18000".
