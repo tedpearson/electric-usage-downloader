@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -15,6 +16,7 @@ type ElectricUsage struct {
 	EndTime     time.Time
 	WattHours   int64
 	CostInCents *int64
+	MeterName   *string
 }
 
 // Response holds the parsed response from the SmartHub poll api.
@@ -35,6 +37,7 @@ type SmartHubData struct {
 // SmartHubSeries holds parsed response data from the SmartHub poll api.
 // It holds a list of SmartHubPoints.
 type SmartHubSeries struct {
+	Name string          `json:"name"`
 	Data []SmartHubPoint `json:"data"`
 }
 
@@ -94,13 +97,13 @@ func ParseReader(readCloser io.ReadCloser) ([]ElectricUsage, error) {
 	if !ok {
 		return nil, errors.New("no ELECTRIC key")
 	}
-	var usageSeries, costSeries []SmartHubPoint
+	var usageData, costData []SmartHubSeries
 	for _, data := range datas {
 		switch data.Type {
 		case "USAGE":
-			usageSeries = data.Series[0].Data
+			usageData = data.Series
 		case "COST":
-			costSeries = data.Series[0].Data
+			costData = data.Series
 		}
 	}
 	// this is dumb, but the SmartHub api returns "unix timestamps"
@@ -112,20 +115,42 @@ func ParseReader(readCloser io.ReadCloser) ([]ElectricUsage, error) {
 		return nil, err
 	}
 	_, offset := time.Now().In(zone).Zone()
-	period := time.UnixMilli(usageSeries[1].UnixMillis).Sub(time.UnixMilli(usageSeries[0].UnixMillis))
-	records := make([]ElectricUsage, len(usageSeries))
-	for i := range usageSeries {
-		usage := usageSeries[i]
-		// see note above about "unix timestamps"
-		start := time.UnixMilli(usage.UnixMillis).Add(time.Second * time.Duration(-offset))
-		records[i].StartTime = start
-		records[i].EndTime = start.Add(period)
-		records[i].WattHours = int64(usage.Value * 1000)
-	}
-	// note: cost is not returned by all SmartHub implementations. So this is a no-op sometimes.
-	for i := range costSeries {
-		cost := int64(costSeries[i].Value * 100)
-		records[i].CostInCents = &cost
+
+	seriesCount := len(usageData)
+	dataCount := len(usageData[0].Data)
+	records := make([]ElectricUsage, seriesCount*dataCount)
+	for i := range usageData {
+		meterName := parseName(usageData[i].Name, seriesCount)
+		usageSeries := usageData[i].Data
+		period := time.UnixMilli(usageSeries[1].UnixMillis).Sub(time.UnixMilli(usageSeries[0].UnixMillis))
+		for j := range usageSeries {
+			usage := usageSeries[j]
+			index := j + (i * dataCount)
+			// see note above about "unix timestamps"
+			start := time.UnixMilli(usage.UnixMillis).Add(time.Second * time.Duration(-offset))
+			records[index].StartTime = start
+			records[index].EndTime = start.Add(period)
+			records[index].WattHours = int64(usage.Value * 1000)
+			records[index].MeterName = meterName
+		}
+		// note: cost is not returned by all SmartHub implementations.
+		if len(costData) > i {
+			costSeries := costData[i].Data
+			for j := range costSeries {
+				cost := int64(costSeries[j].Value * 100)
+				records[j+(i*dataCount)].CostInCents = &cost
+			}
+		}
 	}
 	return records, nil
+}
+
+// parseName returns the last part of a string after a space. If seriesCount is 1, returns nil.
+func parseName(name string, seriesCount int) *string {
+	var result *string
+	if seriesCount > 1 {
+		tokens := strings.Split(name, " ")
+		result = &tokens[len(tokens)-1]
+	}
+	return result
 }
