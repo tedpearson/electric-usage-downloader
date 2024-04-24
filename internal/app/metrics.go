@@ -29,6 +29,9 @@ func WriteMetrics(records []ElectricUsage, config InfluxConfig) error {
 			if record.CostInCents != nil {
 				point.AddField("cost", float64(*record.CostInCents)/minutes)
 			}
+			if record.MeterName != nil {
+				point.AddTag("name", *record.MeterName)
+			}
 			points = append(points, point)
 		}
 		err := writeApi.WritePoint(context.Background(), points...)
