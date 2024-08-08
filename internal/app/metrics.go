@@ -17,7 +17,7 @@ func WriteMetrics(records []ElectricUsage, config InfluxConfig) error {
 		opts.SetTLSConfig(&tls.Config{InsecureSkipVerify: true})
 	}
 	client := influxdb2.NewClientWithOptions(config.Host, config.AuthToken, opts)
-	writeApi := client.WriteAPIBlocking("", config.Database)
+	writeApi := client.WriteAPIBlocking(config.Org, config.Database)
 	for _, record := range records {
 		minutes := record.EndTime.Sub(record.StartTime).Minutes()
 		points := make([]*write.Point, 0, int(minutes))

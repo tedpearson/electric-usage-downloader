@@ -15,6 +15,7 @@ import (
 type InfluxConfig struct {
 	Host      string `yaml:"host"`
 	AuthToken string `yaml:"auth_token"`
+	Org       string `yaml:"org"`
 	Database  string `yaml:"database"`
 	Insecure  bool   `yaml:"insecure"`
 }

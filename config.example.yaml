@@ -8,5 +8,6 @@ smarthub:
 influxdb:
   host: https://localhost:8428
   auth_token: johndoe:influx_password
+  org: ""
   database: db_name
   insecure: false
