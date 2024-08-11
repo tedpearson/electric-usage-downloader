@@ -68,7 +68,7 @@ func (t *RetryableError) Error() string {
 
 // ParseReader parses the json response received in FetchData from the SmartHub poll api.
 // It can return a normal error, a RetryableError, or parsed ElectricUsage.
-func ParseReader(readCloser io.ReadCloser) ([]ElectricUsage, error) {
+func ParseReader(readCloser io.ReadCloser, timezone string) ([]ElectricUsage, error) {
 	defer func() {
 		if err := readCloser.Close(); err != nil {
 			fmt.Println("Error: failed to close response body")
@@ -107,10 +107,10 @@ func ParseReader(readCloser io.ReadCloser) ([]ElectricUsage, error) {
 		}
 	}
 	// this is dumb, but the SmartHub api returns "unix timestamps"
-	// that are based on EST (which is incorrect), at least as of 2/29/2024.
+	// that are based on the utility timezone (which is incorrect), at least as of 2/29/2024.
 	// Example: For Midnight, Jan 1, 1970, EST, this api would return "0"
 	//          However, the correct value (UTC) would be "18000".
-	zone, err := time.LoadLocation("America/New_York")
+	zone, err := time.LoadLocation(timezone)
 	if err != nil {
 		return nil, err
 	}

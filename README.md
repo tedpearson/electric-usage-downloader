@@ -22,6 +22,9 @@ Download [config.example.yaml](config.example.yaml) and fill in your own values.
   - Navigate to Usage Explorer (example: https://novec.smarthub.coop/ui/#/usageExplorer)
   - Find a call to `services/secured/utility-usage/poll` in the Network tab
   - Open the call, and copy the `serviceLocationNumber` field from the Payload tab.
+- `timezone` needs to be set to the timezone used by your utility. For some reason,
+  the SmartHub API decided to return unix timestamps, but in the utility's timezone
+  instead of in UTC, which would be the normal choice for an API.
 - `influxdb.insecure` allows connecting to a server with certificate issues.
 - The other fields should be fairly self-explanatory.
 

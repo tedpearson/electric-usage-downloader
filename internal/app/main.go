@@ -29,6 +29,7 @@ type SmartHubConfig struct {
 	Password        string `yaml:"password"`
 	Account         string `yaml:"account"`
 	ServiceLocation string `yaml:"service_location"`
+	Timezone        string `yaml:"timezone"`
 }
 
 // Config is the config format for electric-usage-downloader
@@ -105,7 +106,7 @@ func Main() error {
 			if err != nil {
 				return nil, err
 			}
-			records, err := ParseReader(r)
+			records, err := ParseReader(r, config.SmartHub.Timezone)
 			if err != nil {
 				return nil, err
 			}
