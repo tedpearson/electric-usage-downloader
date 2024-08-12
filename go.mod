@@ -4,7 +4,7 @@ go 1.21
 
 require (
 	github.com/avast/retry-go/v4 v4.6.0
-	github.com/influxdata/influxdb-client-go/v2 v2.13.0
+	github.com/influxdata/influxdb-client-go/v2 v2.14.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
