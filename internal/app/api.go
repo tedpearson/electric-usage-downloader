@@ -81,7 +81,7 @@ type PollRequest struct {
 // FetchData calls the api to get data for a particular time period.
 // Note that the api may return a PENDING status or actual data.
 // However, parsing of the response is handled in ParseReader.
-func FetchData(start, end time.Time, config SmartHubConfig, jwt string) (io.ReadCloser, error) {
+func FetchData(start, end time.Time, config SmartHubConfig, jwt string) (*bytes.Reader, error) {
 	client := http.Client{}
 	pollRequest := PollRequest{
 		TimeFrame:       "HOURLY",
@@ -117,5 +117,15 @@ func FetchData(start, end time.Time, config SmartHubConfig, jwt string) (io.Read
 	if err != nil {
 		return nil, err
 	}
-	return resp.Body, nil
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			fmt.Println("Error: failed to close response body")
+		}
+	}()
+	buf := new(bytes.Buffer)
+	_, err = io.Copy(buf, resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	return bytes.NewReader(buf.Bytes()), nil
 }

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -68,16 +69,17 @@ func (t *RetryableError) Error() string {
 
 // ParseReader parses the json response received in FetchData from the SmartHub poll api.
 // It can return a normal error, a RetryableError, or parsed ElectricUsage.
-func ParseReader(readCloser io.ReadCloser, timezone string) ([]ElectricUsage, error) {
-	defer func() {
-		if err := readCloser.Close(); err != nil {
-			fmt.Println("Error: failed to close response body")
-		}
-	}()
-	reader := readCloser.(io.Reader)
+func ParseReader(reader *bytes.Reader, timezone string) ([]ElectricUsage, error) {
 	if debug {
 		_, _ = fmt.Fprintln(os.Stderr, "\nDEBUG: Response from poll endpoint:")
-		reader = io.TeeReader(readCloser, os.Stderr)
+		_, err := reader.WriteTo(os.Stderr)
+		if err != nil {
+			return nil, err
+		}
+		_, err = reader.Seek(0, io.SeekStart)
+		if err != nil {
+			return nil, err
+		}
 	}
 	resp := &Response{}
 	err := json.NewDecoder(reader).Decode(resp)
