@@ -26,6 +26,9 @@ func Auth(config SmartHubConfig) (string, error) {
 	formData.Set("password", config.Password)
 	authUrl := fmt.Sprintf("%s/services/oauth/auth/v2", config.ApiUrl)
 	parsed, err := url.Parse(config.ApiUrl)
+	if err != nil {
+		return "", err
+	}
 	authority := parsed.Hostname()
 	req, err := http.NewRequest("POST", authUrl, strings.NewReader(formData.Encode()))
 	if err != nil {
@@ -98,8 +101,14 @@ func FetchData(start, end time.Time, config SmartHubConfig, jwt string) (io.Read
 	}
 	pollUrl := fmt.Sprintf("%s/services/secured/utility-usage/poll", config.ApiUrl)
 	parsed, err := url.Parse(config.ApiUrl)
+	if err != nil {
+		return nil, err
+	}
 	authority := parsed.Hostname()
 	req, err := http.NewRequest("POST", pollUrl, buffer)
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Set("authority", authority)
 	req.Header.Set("authorization", "Bearer "+jwt)
 	req.Header.Set("x-nisc-smarthub-username", config.Username)
