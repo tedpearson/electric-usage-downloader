@@ -8,7 +8,7 @@ In prior versions of SmartHub, it was possible to download CSV exports of 15-min
 specifying an "hourly" interval, but since January 2024 only hourly data has been available via CSV. That's
 why I reverse engineered the API instead of automating a download of the CSV as I had previously done.
 
-Data can be imported into InfluxDB or VictoriaMetrics.
+Data can be imported into InfluxDB or VictoriaMetrics, or exported as a CSV file.
 
 ## Config
 
@@ -25,15 +25,17 @@ Download [config.example.yaml](config.example.yaml) and fill in your own values.
 - `timezone` needs to be set to the timezone used by your utility. For some reason,
   the SmartHub API decided to return unix timestamps, but in the utility's timezone
   instead of in UTC, which would be the normal choice for an API.
+- `influxdb` section does not need to be configured if you are only using the `--csv-file` option.
 - `influxdb.insecure` allows connecting to a server with certificate issues.
 - The other fields should be fairly self-explanatory.
 
 ## Running
 
-- To download and insert the last `extract_days`, run like this arguments: `electric-usage-downloader --config config.yaml`
+- To download and insert the last `extract_days` of data, run like this arguments: `electric-usage-downloader --config config.yaml`
 - To download and insert a specific date range, run with arguments: 
   `electric-usage-downloader --config config.yaml --start 2024-01-16 --end 2024-01-17`
 - The `--debug` flag can be used to log responses from the API for assistance debugging issues.
+- The `--csv-file` flag will write the data to a CSV file instead of Influx/VictoriaMetrics.
 
 ## Details
 
