@@ -47,6 +47,7 @@ func Main() error {
 	startFlag := flag.String("start", "", "Start date of period to extract from electric co.")
 	endFlag := flag.String("end", "", "End date of period to extract from electric co.")
 	debugFlag := flag.Bool("debug", false, "Enable to print out verbose debugging logs.")
+	csvFlag := flag.String("csv-file", "", "Path to output data in csv format, as an alternative to writing to influx")
 	flag.Parse()
 
 	debug = *debugFlag
@@ -119,10 +120,18 @@ func Main() error {
 	if err != nil {
 		return err
 	}
-	fmt.Println("Writing data to database...")
-	err = WriteMetrics(usage, config.InfluxDB)
-	if err != nil {
-		return err
+	if *csvFlag != "" {
+		fmt.Println("Writing data to csv file...")
+		err = WriteCsv(usage, *csvFlag)
+		if err != nil {
+			return err
+		}
+	} else {
+		fmt.Println("Writing data to database...")
+		err = WriteMetrics(usage, config.InfluxDB)
+		if err != nil {
+			return err
+		}
 	}
 	fmt.Println("Done")
 	return nil
