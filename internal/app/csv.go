@@ -18,15 +18,6 @@ func WriteCsv(records []ElectricUsage, csvFile string) error {
 	writer := csv.NewWriter(file)
 	defer writer.Flush()
 
-	// Write comments
-	_, err = file.WriteString(`# Notes:
-# MeterName will only be populated if there are multiple meters returned in the data.
-# StartUnixMillis and EndUnixMillis will only be in the correct timezone if you specify the correct timezone in the config.
-`)
-	if err != nil {
-		return err
-	}
-
 	// Write the header row
 	header := []string{"StartUnixMillis", "EndUnixMillis", "WattHours", "CostInCents", "MeterName"}
 	if err := writer.Write(header); err != nil {

@@ -36,6 +36,9 @@ Download [config.example.yaml](config.example.yaml) and fill in your own values.
   `electric-usage-downloader --config config.yaml --start 2024-01-16 --end 2024-01-17`
 - The `--debug` flag can be used to log responses from the API for assistance debugging issues.
 - The `--csv-file` flag will write the data to a CSV file instead of Influx/VictoriaMetrics.
+  - Format: "StartUnixMillis", "EndUnixMillis", "WattHours", "CostInCents", "MeterName"
+  - MeterName will only be populated if there are multiple meters returned in the data.
+  - StartUnixMillis and EndUnixMillis will only be in the correct timezone if you specify the correct timezone in the config.
 
 ## Details
 
